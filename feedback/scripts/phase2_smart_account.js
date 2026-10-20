@@ -2,7 +2,7 @@
  * PHASE 2: LIVE ON-CHAIN SMART ACCOUNT & NETWORK ROUTING SUITE
  * Network: Somnia Tokyo / Hideki Testnet (Chain ID: 50383)
  * Target: Safe Smart Account (0x2d8B... ) & MarginBank (0x4787...)
- * Run: node feedback/phase2_smart_account.js
+ * Run: node feedback/scripts/phase2_smart_account.js
  */
 
 require('dotenv').config();

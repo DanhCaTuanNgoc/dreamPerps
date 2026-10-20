@@ -5,7 +5,7 @@
 > **SDK Tested:** `@somnia-chain/markets-sdk@0.32.1`  
 > **Repository:** [somnia-chain/dreamdex-bot-kit](https://github.com/somnia-chain/dreamdex-bot-kit) & `@somnia-chain/markets-sdk`  
 > **Submission Track:** Feedback Track (Automated Stress-testing & Defect Analysis)  
-> **Execution Status:** 100% Verified & Reproducible via `node feedback/reproduce_all.js`
+> **Execution Status:** 100% Verified & Reproducible via `node feedback/scripts/reproduce_all.js`
 
 ---
 
@@ -37,7 +37,7 @@ All issues documented below include exact reproduction code, expected vs actual 
   - **Transaction Hash:** [`0x9f09e7f4c2211f9097b1689e6d8a1bc98d7d19020a09c77ea01344118542ccf3`](https://explorer.testnet.somnia.network/tokyo/tx/0x9f09e7f4c2211f9097b1689e6d8a1bc98d7d19020a09c77ea01344118542ccf3)
   - **Block Number:** `28555324`
   - **Executed Method:** `execTransaction` routing to MarginBank and Pool `0x4181dd08E73BbCdd1Ba3E615A18f6abD941b94C0`.
-- **Live Automated Test Suite:** 100% verified and reproducible on Somnia Testnet via `node feedback/reproduce_all.js`.
+- **Live Automated Test Suite:** 100% verified and reproducible on Somnia Testnet via `node feedback/scripts/reproduce_all.js`.
 
 ---
 
@@ -496,12 +496,12 @@ ContractRevertError: @somnia-chain/markets-sdk: placeOrder reverted: ERC20Insuff
 
 ## One-Command Automated Reproduction Script
 
-To make verification effortless for bounty judges and maintainers, we provide a unified verification script located at `feedback/reproduce_all.js`. 
+To make verification effortless for bounty judges and maintainers, we provide a unified verification script located at `feedback/scripts/reproduce_all.js`. 
 
-To verify all 8 defects in sequence, run:
+To verify all 10 defects in sequence, run:
 
 ```bash
-node feedback/reproduce_all.js
+node feedback/scripts/reproduce_all.js
 ```
 
 ### Verified Execution Output:
@@ -786,11 +786,11 @@ Documentation defects and uninformative error codes represent fast, high-probabi
 
 | Step | Milestone | Script / Deliverable | Target Vector | Status |
 |:---:|:---|:---|:---|:---:|
-| **Step 1** | Safe Smart Account Calldata & Nonce Suite | `feedback/phase2_smart_account.js` | Vector 2 (Smart Account) | Scheduled |
-| **Step 2** | Margin Math & Invariant Stress Suite | `feedback/phase2_margin_invariants.js` | Vector 1 (Margin & Liquidation) | Scheduled |
-| **Step 3** | CLOB Concurrency & 10-20 Order Burst | `feedback/phase2_concurrency_race.js` | Vector 3 (Burst & Races) | Scheduled |
-| **Step 4** | Quick-Win Fuzzing Suite (Tick, Lot, TIF) | `feedback/phase2_quick_wins.js` | Vector 4 (Boundary Fuzzing) | Scheduled |
-| **Step 5** | Docs Snippets & Error Granularity Audit | `feedback/phase2_docs_audit.js` | Vector 5 (Docs & DX) | Scheduled |
+| **Step 1** | Safe Smart Account Calldata & Nonce Suite | `feedback/scripts/phase2_smart_account.js` | Vector 2 (Smart Account) | Verified ✅ |
+| **Step 2** | Margin Math & Invariant Stress Suite | `feedback/scripts/phase2_margin_invariants.js` | Vector 1 (Margin & Liquidation) | Verified ✅ |
+| **Step 3** | CLOB Concurrency & 10-20 Order Burst | `feedback/scripts/phase2_concurrency_race.js` | Vector 3 (Burst & Races) | Verified ✅ |
+| **Step 4** | Quick-Win Fuzzing Suite (Tick, Lot, TIF) | `feedback/scripts/phase2_quick_wins.js` | Vector 4 (Boundary Fuzzing) | Verified ✅ |
+| **Step 5** | Docs Snippets & Error Granularity Audit | `feedback/scripts/phase2_docs_audit.js` | Vector 5 (Docs & DX) | Verified ✅ |
 | **Step 6** | Bug Compilation & Issue Generation | Format into `feedback/issue-*.md` | All Vectors ($40/$15) | Standby |
 
 ---

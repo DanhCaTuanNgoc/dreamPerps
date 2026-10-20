@@ -69,7 +69,7 @@ The project addresses two core tracks of the bounty program:
 ## 📂 Project Structure
 
 ```text
-├── feedback/                    # Standardized bug reports & automated reproduction scripts
+├── feedback/                    # Standardized bug reports (Feedback Track)
 │   ├── issue-01-loadmarkets-empty-addresses.md
 │   ├── issue-02-createorder-missing-client-validation.md
 │   ├── issue-03-watchorderbook-notconfigured-error.md
@@ -80,12 +80,14 @@ The project addresses two core tracks of the bounty program:
 │   ├── issue-08-smart-account-undocumented.md
 │   ├── issue-09-fetchfundingratehistory-notconfigured.md
 │   ├── issue-10-market-missing-limits-precision.md
-│   ├── reproduce_all.js         # Single-command runner for all 10 issues
-│   ├── phase2_smart_account.js  # Live on-chain Safe & MarginBank audit
-│   ├── phase2_margin_invariants.js # Financial invariant math test suite
-│   ├── phase2_concurrency_race.js  # 15-call burst concurrency stress test
-│   ├── phase2_quick_wins.js     # Edge-case input fuzzing harness
-│   └── phase2_docs_audit.js     # Documentation code snippet verification
+│   ├── TEMPLATE.md              # Template for reporting new issues
+│   └── scripts/                 # Automated reproduction & verification test suites
+│       ├── reproduce_all.js     # Single-command runner for all 10 issues
+│       ├── phase2_smart_account.js  # Live on-chain Safe & MarginBank audit
+│       ├── phase2_margin_invariants.js # Financial invariant math test suite
+│       ├── phase2_concurrency_race.js  # 15-call burst concurrency stress test
+│       ├── phase2_quick_wins.js     # Edge-case input fuzzing harness
+│       └── phase2_docs_audit.js     # Documentation code snippet verification
 ├── src/
 │   ├── config/                  # Network constants, pairs, grid parameters
 │   ├── services/                # MarketService wrapper over SomniaMarkets SDK
@@ -226,39 +228,23 @@ Our automated testing harness discovered and isolated **10 reproducible defects*
 You can execute all 10 reproduction proofs sequentially with a single command against the live testnet:
 
 ```bash
-node feedback/reproduce_all.js
+node feedback/scripts/reproduce_all.js
 ```
 
-Additional dedicated test suites in `feedback/`:
+Additional dedicated test suites in `feedback/scripts/`:
 ```bash
 # Verify live Safe Smart Account state & MarginBank equity on Tokyo Testnet
-node feedback/phase2_smart_account.js
+node feedback/scripts/phase2_smart_account.js
 
 # Audit on-chain financial invariants (equity balance, funding cadence, liquidation formula)
-node feedback/phase2_margin_invariants.js
+node feedback/scripts/phase2_margin_invariants.js
 
 # Execute 15-call concurrent burst testing CLOB matching engine stability
-node feedback/phase2_concurrency_race.js
+node feedback/scripts/phase2_concurrency_race.js
 
 # Run input boundary fuzzing (zero price, negative amount, unknown symbols)
-node feedback/phase2_quick_wins.js
+node feedback/scripts/phase2_quick_wins.js
 
 # Audit official documentation code snippets & type contracts
-node feedback/phase2_docs_audit.js
+node feedback/scripts/phase2_docs_audit.js
 ```
-
----
-
-## 📢 X Posts
-
-Links to our official posts on X documenting project development, testnet order execution, and technical findings (tagging `@DreamDEXSomnia`):
-
-- **Post 1 (Architecture & Strategy Showcase):** [Link to X Post 1](https://x.com/your_handle/status/...)
-- **Post 2 (Live Tokyo Testnet Execution & Explorer Proof):** [Link to X Post 2](https://x.com/your_handle/status/...)
-- **Post 3 (SDK Stress-Testing & Technical Findings):** [Link to X Post 3](https://x.com/your_handle/status/...)
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.

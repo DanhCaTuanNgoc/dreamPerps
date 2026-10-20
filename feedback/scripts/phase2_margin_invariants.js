@@ -2,7 +2,7 @@
  * PHASE 2: FINANCIAL INVARIANTS, MARGIN MATH & FUNDING SUITE
  * Network: Somnia Tokyo / Hideki Testnet (Chain ID: 50383)
  * Target: MarginBank (0x4787...) & BTC/USDso Perp Pool (0x4181...)
- * Run: node feedback/phase2_margin_invariants.js
+ * Run: node feedback/scripts/phase2_margin_invariants.js
  */
 
 require('dotenv').config();

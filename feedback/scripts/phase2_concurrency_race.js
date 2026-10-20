@@ -2,7 +2,7 @@
  * PHASE 2: CLOB CONCURRENCY, BURST STRESS & ORDERBOOK INTEGRITY
  * Network: Somnia Tokyo / Hideki Testnet (Chain ID: 50383)
  * Target: dreamDEX CLOB Matching Engine & Orderbooks
- * Run: node feedback/phase2_concurrency_race.js
+ * Run: node feedback/scripts/phase2_concurrency_race.js
  */
 
 require('dotenv').config();

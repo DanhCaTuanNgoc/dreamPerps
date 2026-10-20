@@ -2,7 +2,7 @@
  * PHASE 2: QUICK-WIN BOUNDARY FUZZING SUITE
  * Network: Somnia Tokyo / Hideki Testnet (Chain ID: 50383)
  * Target: Lot size, Tick size, Zero boundary, Symbol fuzzing
- * Run: node feedback/phase2_quick_wins.js
+ * Run: node feedback/scripts/phase2_quick_wins.js
  */
 
 require('dotenv').config();

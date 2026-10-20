@@ -1,8 +1,8 @@
 /**
  * DREAMDEX PERPS BUILDER BOUNTY - FEEDBACK TRACK
- * Automated Reproduction Suite for Issues 01 to 08
+ * Automated Reproduction Suite for Issues 01 to 10
  * Uses live Somnia Tokyo Testnet connection and real wallet address.
- * Run: node feedback/reproduce_all.js
+ * Run: node feedback/scripts/reproduce_all.js
  */
 
 require('dotenv').config();

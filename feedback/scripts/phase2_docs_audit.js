@@ -2,7 +2,7 @@
  * PHASE 2: DOCUMENTATION SNIPPETS & ERROR CODE GRANULARITY AUDIT
  * Network: Somnia Tokyo / Hideki Testnet (Chain ID: 50383)
  * Target: Official Documentation code snippets, TypeScript type contracts & Error handling
- * Run: node feedback/phase2_docs_audit.js
+ * Run: node feedback/scripts/phase2_docs_audit.js
  */
 
 require('dotenv').config();
