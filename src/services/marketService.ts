@@ -1,4 +1,4 @@
-import { SomniaMarkets } from "@somnia-chain/markets-sdk";
+import { SomniaMarkets, SOMNIA_TESTNET_ADDRESSES } from "@somnia-chain/markets-sdk";
 import { somniaShannon } from "@somnia-chain/markets-sdk/chains";
 import { config } from "../config/index.js";
 import { logger } from "../utils/logger.js";
@@ -10,7 +10,8 @@ export class MarketService {
   constructor() {
     try {
       const options: any = {
-        chain: somniaShannon
+        chain: somniaShannon,
+        addresses: SOMNIA_TESTNET_ADDRESSES
       };
 
       if (config.trader.privateKey) {
@@ -24,6 +25,18 @@ export class MarketService {
       logger.success(`Initialized SomniaMarkets client successfully for Somnia Shannon/Tokyo testnet.`);
     } catch (err: any) {
       logger.warn(`SomniaMarkets init warning: ${err.message}`);
+    }
+  }
+
+  /**
+   * Load markets from chain
+   */
+  async init() {
+    try {
+      await this.exchange.loadMarkets();
+      logger.info(`Loaded ${this.exchange.symbols?.length || 0} active perpetual markets.`);
+    } catch (err: any) {
+      logger.warn(`Market load warning:`, err.message);
     }
   }
 
@@ -94,14 +107,10 @@ export class MarketService {
   /**
    * Watch live order book
    */
-  async watchOrderBook(symbol: string, callback: (book: any) => void) {
-    logger.info(`Starting OrderBook stream for ${symbol}...`);
+  async watchOrderBook(symbol: string, limit: number = 10, callback?: (book: any) => void) {
+    logger.info(`Fetching OrderBook for ${symbol}...`);
     try {
-      if (typeof this.exchange?.watchOrderBook === "function") {
-        await this.exchange.watchOrderBook(symbol, callback);
-      } else {
-        logger.warn(`watchOrderBook not directly supported in this SDK build. Using polling fallback.`);
-      }
+      return await this.exchange.fetchOrderBook(symbol, limit);
     } catch (err: any) {
       this.recordError("watchOrderBook", err);
     }
@@ -112,10 +121,8 @@ export class MarketService {
    */
   async getLivePrice(symbol: string): Promise<number | null> {
     try {
-      if (typeof this.exchange?.getLivePrice === "function") {
-        return await this.exchange.getLivePrice(symbol);
-      }
-      return null;
+      const ticker = await this.exchange.fetchTicker(symbol);
+      return ticker?.markPrice || ticker?.indexPrice || null;
     } catch (err: any) {
       this.recordError("getLivePrice", err);
       return null;

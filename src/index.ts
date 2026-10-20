@@ -31,6 +31,7 @@ async function startAgent() {
   `);
 
   const marketService = new MarketService();
+  await marketService.init();
   const sentinel = new SentinelStrategy(marketService);
   const grid = new GridStrategy(marketService);
 
