@@ -563,6 +563,178 @@ All 8 issues successfully verified and reproducible on live network!
 
 ---
 
+## 🔬 Phase 2: Live On-Chain Stress Testing & Bug Bounty Attack Plan (Real Transactions & Hashes)
+
+Now that we have successfully connected to **Somnia Tokyo Testnet**, mapped the **Perps Arena Safe Smart Account architecture**, and verified live transaction execution on-chain, we commence **Phase 2: Live On-Chain Execution, Concurrency Fuzzing & Financial Invariant Verification**.
+
+Phase 2 is specifically engineered to uncover **high-value defects ($40 Critical/Major and $15 Normal)** by combining:
+1. **Elite, hard-to-find edge cases** (Account Abstraction calldata routing, race conditions, financial math invariants, liquidation boundary discrepancies).
+2. **Common, high-probability test vectors** (Lot size boundaries, tick-size rounding, self-trade prevention, Time-In-Force behaviors) to maximize immediate bounty capture.
+
+---
+
+### Phase 2 Architecture & Live Testnet Environment
+
+- **Network:** Somnia Tokyo / Shannon Testnet (Chain ID: `50312`, Sub-second block finality)
+- **EOA Signer / Owner:** `0xE50dD8e4aE1b1Dd46334eA22C10129Ee4d6736eF`
+- **Perps Arena Smart Account (Safe Proxy):** `0x2d8B07bbfC92cF3A606b331D1c9385d46E7acAe8`
+- **MarginBank Contract:** `0x478769E1177C0773c43A593DCCc4Ad15F15F1394`
+- **Perp Pool Contract (WBTC/USDso):** `0x4181dd08E73BbCdd1Ba3E615A18f6abD941b94C0`
+- **Live Baseline Order TxHash:** [`0x9f09e7f4c2211f9097b1689e6d8a1bc98d7d19020a09c77ea01344118542ccf3`](https://explorer.testnet.somnia.network/tokyo/tx/0x9f09e7f4c2211f9097b1689e6d8a1bc98d7d19020a09c77ea01344118542ccf3) (Block `28555324`)
+- **Active Paper Margin:** `1,000 USDso`
+
+---
+
+### Test Vector Matrix
+
+```
+┌─────────────────────────────────────────────────────────────────────────────────────────┐
+│                                PHASE 2 ATTACK MATRIX                                    │
+├───────────────────────────────┬─────────────────────────────────┬───────────────────────┤
+│ Vector Category               │ Target Scope                    │ Bounty Potential      │
+├───────────────────────────────┼─────────────────────────────────┼───────────────────────┤
+│ Vector 1: Financial Invariants│ Margin Math, MMR, Liquidation   │ $40 (Critical/Major)  │
+│ Vector 2: Smart Account Proxy │ Safe calldata, Replay, Delegate │ $40 (Critical/Major)  │
+│ Vector 3: CLOB Concurrency    │ Race conditions, Burst, Desync  │ $40 (Major)           │
+│ Vector 4: Common Edge Cases   │ Min lot, Tick size, Self-match  │ $15 - $40 (Norm/Maj)  │
+└───────────────────────────────┴─────────────────────────────────┴───────────────────────┘
+```
+
+---
+
+### 1. Vector 1: Financial Invariants & Margin Math Vulnerabilities (Target: $40 Critical/Major)
+
+Decentralized perpetual protocols rely on deterministic mathematical invariants. Any deviation represents an exploit or critical accounting vulnerability.
+
+#### Case 1.1: Double-Margin Allocation Race Condition
+- **Concept:** Can available margin be locked twice if two transactions arrive in the same block or matching tick?
+- **Execution:**
+  - With 1,000 USDso margin, fire two simultaneous limit buy orders requiring 700 USDso each (Total: 1,400 USDso > 1,000 USDso).
+  - Submit both orders in the exact same millisecond via `Promise.allSettled()`.
+- **Invariant to Verify:** 
+  $$\sum \text{Locked Margin} \le \text{Total Margin}$$
+- **Vulnerability Flag:** If both orders are accepted into the book or on-chain without an immediate `InsufficientMargin` reject, allowing a negative free margin state.
+
+#### Case 1.2: Margin Unlock Invariant on Order Cancellation
+- **Concept:** Canceling an open limit order must immediately and unconditionally release 100% of the locked margin back to `Free Margin`.
+- **Execution:**
+  1. Record baseline `freeMargin` via on-chain `MarginBank.getAccount()`.
+  2. Place a deep limit order locking 500 USDso margin. Confirm `freeMargin` dropped by exactly 500 USDso.
+  3. Execute `cancelOrder()`.
+  4. Query `MarginBank` on-chain state immediately in the succeeding block.
+- **Invariant to Verify:**
+  $$\text{FreeMargin}_{\text{after cancel}} = \text{FreeMargin}_{\text{before order}} - \text{Gas}$$
+- **Vulnerability Flag:** Ghost margin lockup, partial unlock, or lag (>1 block) where margin remains locked after the cancel receipt confirms.
+
+#### Case 1.3: Liquidation Price Discrepancy (SDK vs On-Chain vs Web UI)
+- **Concept:** Compare the liquidation price computed locally by the SDK formula with the on-chain settlement contract and the Perps Arena UI display.
+- **Formula:**
+  $$\text{Liq Price (Long)} = \text{Entry Price} \times \left(1 - \frac{1}{\text{Leverage}} + \text{Maintenance Margin Ratio}\right)$$
+- **Execution:**
+  1. Open a 20x leverage Long BTC position using 200 USDso margin.
+  2. Extract `liquidationPrice` from SDK position query, Perps Arena UI, and MarginBank events.
+  3. Fuzz different leverage levels (2x, 5x, 10x, 20x).
+- **Vulnerability Flag:** Any numerical drift > 0.05% between the UI/SDK liquidation price and on-chain trigger threshold, which leads to unexpected liquidations.
+
+#### Case 1.4: Sub-Satoshi Dust & Rounding Precision Invariant
+- **Concept:** Perpetual contracts calculate margin down to 18 decimals (`1e18`). Extreme fractional positions can cause rounding dust lockups or truncation errors.
+- **Execution:**
+  - Submit order sizes with alternating prime fractional sizes (e.g., `0.000333333333333333 WBTC`).
+  - Close the position in fractional chunks (e.g., $1/3$, then $1/3$, then remainder).
+- **Vulnerability Flag:** Residual dust (< $0.0001) permanently frozen in the contract that cannot be withdrawn or utilized.
+
+---
+
+### 2. Vector 2: Smart Account (Safe Proxy) & Execution Vectors (Target: $40 Major)
+
+Because DreamDEX Perps Arena utilizes a Gnosis Safe proxy (`0x2d8B07bbfC92cF3A606b331D1c9385d46E7acAe8`) to trade on behalf of the user's EOA (`0xE50dD8e4aE1b1Dd46334eA22C10129Ee4d6736eF`), unique account abstraction vectors emerge.
+
+#### Case 2.1: Safe `execTransaction` Internal Failure Masking
+- **Concept:** Safe transactions wrap contract calls inside `execTransaction()`. If `safeTxGas` or internal parameters are miscalculated, the outer transaction succeeds (returns `true` / emits `ExecutionSuccess`), but the inner call to `MarginBank` or `placeOrder` silently reverts.
+- **Execution:**
+  - Craft a Safe proxy call with an intentional invalid parameter inside the inner calldata.
+  - Broadcast the transaction.
+- **Vulnerability Flag:** Transaction shows "Success" on Somnia Explorer, but order is never placed, leading bots to assume an order is active when it failed.
+
+#### Case 2.2: EOA Direct Execution vs Smart Account Solvency Isolation
+- **Concept:** Verify whether the EOA can directly invoke pool functions bypassing the Smart Account, or whether MarginBank strictly validates `msg.sender == safeAddress`.
+- **Execution:**
+  - Call `placeOrder()` directly from EOA `0xE50d...` targeting the Smart Account's margin balance.
+- **Vulnerability Flag:** Any ability for an external address or signer to debit margin without going through the Safe threshold verification.
+
+#### Case 2.3: Safe Nonce Collision Under Rapid Bot Dispatch
+- **Concept:** Automated trading bots fire multiple transactions per second. Gnosis Safe uses a sequential internal nonce for `execTransaction`.
+- **Execution:**
+  - Dispatch 5 Safe transactions concurrently with same or rapid sequential nonces.
+- **Vulnerability Flag:** Unhandled RPC rejection, nonce stall that freezes subsequent order cancellations, or stuck pending transactions on Somnia.
+
+---
+
+### 3. Vector 3: High-Frequency CLOB Concurrency & Engine vs Chain (Target: $40 Major)
+
+The dreamDEX off-chain matching engine provides sub-10ms matching before on-chain settlement. Concurrency testing exposes state synchronization bugs between the engine and EVM.
+
+#### Case 3.1: Cancel-Replace Collision (The Front-Running Race)
+- **Concept:** What happens when an order cancellation and a market order fill hit the engine in the exact same millisecond?
+- **Execution:**
+  - Place a limit order near the mid price.
+  - Concurrently trigger a `cancelOrder()` and an aggressive crossing order from a secondary test account.
+- **Vulnerability Flag:** 
+  - Order is reported as canceled, but fill event is also emitted.
+  - Margin is double-debited or locked permanently.
+
+#### Case 3.2: Crossing the Orderbook (Maker vs Taker Invariant)
+- **Concept:** A limit buy order placed at or above the lowest ask must execute immediately as a Taker order at the lowest ask price, NOT rest on the book at the higher limit price.
+- **Execution:**
+  - Check current best ask (e.g., $68,000).
+  - Submit a limit buy order at $68,500.
+- **Invariant to Verify:** 
+  $$\text{Execution Price} \le \text{Best Ask}$$
+- **Vulnerability Flag:** If the order rests in the book with price $68,500 above asks, creating a crossed orderbook state (bid > ask).
+
+#### Case 3.3: Self-Trade Prevention (Wash Trading Guardrails)
+- **Concept:** What happens if the same Smart Account places a buy limit order and an opposing sell market order?
+- **Execution:**
+  - Submit Buy Limit at $67,500.
+  - Submit Sell Market/Limit at $67,500 from the same account.
+- **Vulnerability Flag:** Protocol matches the order against itself and charges trading fees, or creates duplicate fills and corrupted position metrics.
+
+---
+
+### 4. Vector 4: Common & Quick-Win Edge Cases (Target: $15 - $40 Bounty)
+
+These represent standard exchange boundary tests that frequently expose unhandled exceptions and missing validation.
+
+#### Case 4.1: Minimum Notional & Lot Size Boundaries
+- **Test:** Submit order sizes below minimum lot (e.g. `0.00000001 WBTC`) or notional value < $1.
+- **Target:** Verify whether the SDK cleanly rejects with `InvalidInputError` or submits on-chain and triggers an uninformative revert.
+
+#### Case 4.2: Tick Size Precision Violations
+- **Test:** Submit a price violating market tick-size (e.g. `$67,123.45678` when tick is `0.1`).
+- **Target:** Does the SDK/matching engine automatically round/truncate, or does it revert with unhandled exception?
+
+#### Case 4.3: Time-in-Force (IOC / FOK) Execution Verification
+- **Test:** Submit an Immediate-or-Cancel (IOC) limit order with partial depth availability.
+- **Target:** Verify that the unfilled portion is immediately canceled and excess margin unlocked without requiring a manual `cancelOrder()` call.
+
+#### Case 4.4: WebSocket vs REST State Desynchronization
+- **Test:** Subscribe to `watchOrderBook` and poll `fetchOrderBook` continuously during live order placement.
+- **Target:** Check for sequence gaps, stale bids/asks, or snapshot rollback after reconnect.
+
+---
+
+### Phase 2 Implementation & Execution Roadmap
+
+| Step | Milestone | Script / Deliverable | Status |
+|:---:|:---|:---|:---:|
+| **Step 1** | Safe Smart Account Calldata & Nonce Suite | `feedback/phase2_smart_account.js` | Scheduled |
+| **Step 2** | Margin Math & Invariant Stress Suite | `feedback/phase2_margin_invariants.js` | Scheduled |
+| **Step 3** | CLOB Concurrency & Race Condition Suite | `feedback/phase2_concurrency_race.js` | Scheduled |
+| **Step 4** | Quick-Win Fuzzing Suite (Tick, Lot, TIF) | `feedback/phase2_quick_wins.js` | Scheduled |
+| **Step 5** | Bug Compilation & Issue Generation | Format into `feedback/issue-*.md` | Standby |
+
+---
+
 ## Conclusion & Recommendations
 
 1. **SDK Address Binding:** Update `SomniaMarkets` constructor in `@somnia-chain/markets-sdk` to automatically map `somniaShannon` (`chainId: 50312`) to `SOMNIA_TESTNET_ADDRESSES`.
