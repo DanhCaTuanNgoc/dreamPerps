@@ -62,7 +62,7 @@ ContractRevertError: @somnia-chain/markets-sdk: placeOrder reverted: ERC20Insuff
 
 ## Environment
 - SDK version: `@somnia-chain/markets-sdk@0.32.1`
-- Network: Somnia Tokyo Testnet (Chain ID: `50312`)
+- Network: Somnia Tokyo Testnet (Chain ID: `50383` / `hidekiTestnet`)
 - Signer EOA: `0xE50dD8e4aE1b1Dd46334eA22C10129Ee4d6736eF`
 - Safe Smart Account: `0x2d8B07bbfC92cF3A606b331D1c9385d46E7acAe8`
 - MarginBank: `0x478769E1177C0773c43A593DCCc4Ad15F15F1394`

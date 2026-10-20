@@ -22,13 +22,14 @@ reproduce();
 ```
 
 ## Expected
-`watchPrice()` should stream price updates, leveraging the on-chain oracle hub (`oracleHub: 0xe40db387cC98601Dd11bd634fF2f3AD5686dE32b`) as a fallback if no indexer URL is provided.
+`watchPrice()` should either automatically bind default testnet price-feed endpoints (`SOMNIA_TESTNET_PRICE_FEED`) for known testnet chains or stream price updates by leveraging the on-chain oracle hub (`oracleHub: 0xe40db387cC98601Dd11bd634fF2f3AD5686dE32b`) as a fallback if `config.priceFeed` is omitted.
 
 ## Actual
 The function crashes with `NotConfiguredError`:
 ```text
 NotConfiguredError: @somnia-chain/markets-sdk: this price-feed read — needs config.priceFeed = { url } — the price-feed indexer's GraphQL endpoint
 ```
+Because `SomniaMarkets` does not bind the price feed configuration by default, developer scripts following basic initialization fail to receive price feeds without extra configuration boilerplate.
 
 ## Evidence
 - Stack trace:

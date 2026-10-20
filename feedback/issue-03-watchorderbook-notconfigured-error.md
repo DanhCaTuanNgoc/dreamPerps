@@ -23,14 +23,14 @@ reproduce();
 2. Observe the unhandled error.
 
 ## Expected
-`watchOrderBook()` should either connect to a bundled testnet indexer or gracefully fallback to polling on-chain orderbook levels (`getLiveSpotOrderBook` / `getBookLevels`) when an indexer URL is not configured.
+`watchOrderBook()` should either automatically bind default testnet indexer endpoints for pre-configured chain presets (`somniaShannon` / `hidekiTestnet`) or gracefully fallback to polling on-chain orderbook levels (`getLiveSpotOrderBook` / `getBookLevels`) when `indexerUrl` is not explicitly provided.
 
 ## Actual
 The function crashes with `NotConfiguredError`:
 ```text
 NotConfiguredError: @somnia-chain/markets-sdk: a live watch (indexer snapshot hydration) — needs config.indexerUrl
 ```
-Because no testnet GraphQL indexer endpoint is configured or documented for chain 50312, real-time orderbook streaming fails completely out of the box.
+Because `SomniaMarkets` does not configure default indexer endpoints for testnet chains and lacks an on-chain polling fallback mechanism, developers initializing standard chain instances encounter immediate runtime crashes when trying to stream live orderbooks.
 
 ## Evidence
 - Stack trace:

@@ -13,13 +13,13 @@
 
 During the development and stress-testing of our algorithmic trading agent (**DreamDEX Perps Sentinel**) for the dreamDEX Perps Builder Bounty, we conducted a systematic automated audit and parameter fuzzing suite against the official `@somnia-chain/markets-sdk` (v0.32.1) on Somnia Tokyo Testnet.
 
-Our automated probing revealed **8 concrete, reproducible defects** across the client SDK, contract integration, and documentation architecture layers:
+Our automated probing revealed **10 concrete, reproducible defects** across the client SDK, contract integration, and documentation architecture layers:
 - **1 Critical Defect ($40):** Silent market discovery failure on Somnia Testnet (`loadMarkets()` returns `[]` without error).
 - **4 Major Defects ($40 each):**
   - Undocumented Safe Smart Account architecture causing balance desync and order execution failure in SDK.
-  - Client-side validation bypass wasting user gas on EVM reverts.
+  - Client-side validation bypass in `createOrder` causing silent opposite-side trades or on-chain reverts.
   - Unhandled `NotConfiguredError` crashes in real-time stream handlers (`watchOrderBook` and `watchPrice`).
-- **3 Normal Defects ($15 each):** Unhandled `SyntaxError` on BigInt conversion, unbounded depth input causing raw EVM reverts, and unhandled JavaScript runtime `TypeError` exceptions.
+- **5 Normal Defects ($15 each):** Unhandled `SyntaxError` on BigInt conversion, unbounded depth input causing raw EVM reverts, unhandled JavaScript runtime `TypeError` exceptions, missing on-chain fallback in `fetchFundingRateHistory`, and omitted CCXT unified metadata (`limits`, `precision`) in `exchange.market()`.
 
 All issues documented below include exact reproduction code, expected vs actual behavior, stack traces, and mitigation workarounds.
 
@@ -46,13 +46,15 @@ All issues documented below include exact reproduction code, expected vs actual 
 | ID | Issue Title | Severity | Area | Bounty Tier |
 |:---|:---|:---:|:---:|:---:|
 | **ISSUE-01** | `loadMarkets()` returns empty array on Somnia Testnet unless contract addresses are manually passed | **Critical** | SDK | $40 |
-| **ISSUE-02** | `createOrder()` bypasses client validation for `type` & `side`, wasting gas via on-chain contract revert | **Major** | SDK | $40 |
+| **ISSUE-02** | `createOrder()` bypasses client validation for `type` & `side`, causing silent opposite-side trades or contract reverts | **Major** | SDK | $40 |
 | **ISSUE-03** | `watchOrderBook()` throws unhandled `NotConfiguredError` without on-chain polling fallback | **Major** | SDK | $40 |
 | **ISSUE-04** | `watchPrice()` throws `NotConfiguredError` requiring GraphQL price-feed without on-chain Oracle fallback | **Major** | SDK | $40 |
 | **ISSUE-05** | `fetchOrderBook()` with large depth triggers on-chain `ContractRevertError` instead of client boundary check | **Normal** | SDK | $15 |
 | **ISSUE-06** | `fetchTicker()` crashes with unhandled JavaScript `TypeError` on non-string inputs | **Normal** | SDK | $15 |
 | **ISSUE-07** | `cancelOrder()` crashes with unhandled `SyntaxError: Cannot convert to BigInt` on alphanumeric IDs | **Normal** | SDK | $15 |
 | **ISSUE-08** | Undocumented Safe Smart Account architecture creates balance desync and order execution failure in SDK | **Major** | Docs / SDK | $40 |
+| **ISSUE-09** | `fetchFundingRateHistory()` throws unhandled `NotConfiguredError` without on-chain fallback | **Normal** | SDK | $15 |
+| **ISSUE-10** | `exchange.market()` omits `limits` and `precision` metadata violating CCXT standard interface | **Normal** | SDK | $15 |
 
 ---
 

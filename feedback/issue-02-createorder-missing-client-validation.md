@@ -27,9 +27,12 @@ reproduce();
 ## Expected
 The SDK should validate parameters locally before network transmission and throw an `InvalidInputError`:
 `InvalidInputError: invalid order type 'invalid_type', must be 'limit' or 'market'`
+`InvalidInputError: invalid order side 'invalid_side', must be 'buy' or 'sell'`
 
 ## Actual
-The SDK signs and broadcasts the invalid order payload directly to the Somnia RPC node. The EVM contract execution reverts on-chain, wasting developer gas and throwing:
+1. When passed an invalid `side` (such as `'long'` or `'short'`), the SDK evaluates `side === 'buy'` as `false` and **silently coerces the order to a SELL/Short order** on-chain without throwing an error! A trader attempting to go long via `'long'` will unintentionally open a short position.
+2. When passed an invalid `type` (such as `'invalid_type'`), the SDK silently defaults `orderType` to `LIMIT` without validating allowed enums.
+3. If collateral is insufficient or parameters conflict with contract invariants, the unvalidated payload is broadcast directly to the Somnia RPC node, burning gas and causing an on-chain EVM contract revert:
 ```text
 ContractRevertError: @somnia-chain/markets-sdk: placeOrder reverted: Missing or invalid parameters. Double check you have provided the correct parameters.
 ```

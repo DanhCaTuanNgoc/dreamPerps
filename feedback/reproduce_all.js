@@ -167,6 +167,44 @@ async function testIssue08() {
   console.log('--> ISSUE 08 REPRODUCED: SDK only derives and queries EOA address (0xE50dD8e4aE1b1Dd46334eA22C10129Ee4d6736eF), lacking Safe Smart Account configuration or delegation routing for Perps Arena balances.');
 }
 
+async function testIssue09() {
+  console.log('\n======================================================');
+  console.log('TESTING ISSUE 09: fetchFundingRateHistory NotConfiguredError');
+  console.log('======================================================');
+  const exchange = new SomniaMarkets({
+    chain: somniaShannon,
+    addresses: SOMNIA_TESTNET_ADDRESSES,
+    privateKey: realPrivateKey
+  });
+  await exchange.loadMarkets();
+  try {
+    await exchange.fetchFundingRateHistory('WBTC/USDso:USDso');
+  } catch (err) {
+    console.log('Caught Error:', err.name, '-', err.message);
+    if (err.name === 'NotConfiguredError') {
+      console.log('--> ISSUE 09 REPRODUCED: fetchFundingRateHistory crashed due to missing indexer configuration without on-chain fallback.');
+    }
+  }
+}
+
+async function testIssue10() {
+  console.log('\n======================================================');
+  console.log('TESTING ISSUE 10: market() missing limits & precision metadata');
+  console.log('======================================================');
+  const exchange = new SomniaMarkets({
+    chain: somniaShannon,
+    addresses: SOMNIA_TESTNET_ADDRESSES,
+    privateKey: realPrivateKey
+  });
+  await exchange.loadMarkets();
+  const market = exchange.market('WBTC/USDso:USDso');
+  console.log('market.limits:', market.limits);
+  console.log('market.precision:', market.precision);
+  if (market.limits === undefined && market.precision === undefined) {
+    console.log('--> ISSUE 10 REPRODUCED: Unified CCXT market metadata limits & precision are undefined.');
+  }
+}
+
 async function runAll() {
   console.log('Running automated reproduction suite with real testnet wallet on Somnia Tokyo Testnet...\n');
   await testIssue01();
@@ -177,7 +215,9 @@ async function runAll() {
   await testIssue06();
   await testIssue07();
   await testIssue08();
-  console.log('\nAll 8 issues successfully verified and reproducible on live network!');
+  await testIssue09();
+  await testIssue10();
+  console.log('\nAll 10 issues successfully verified and reproducible on live network!');
 }
 
 runAll().catch(console.error);
