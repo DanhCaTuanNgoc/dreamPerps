@@ -27,7 +27,7 @@ reproduce();
 ```
 
 ## Expected
-`exchange.market(symbol)` must conform to the CCXT Market unified structure, providing:
+According to the official [Somnia Markets SDK Documentation](https://somnia-platform-docs.vercel.app/markets/somnia-markets), `SomniaMarkets` provides an exchange-level unified surface designed for CCXT muscle memory. `exchange.market(symbol)` must conform to the CCXT Market unified structure, providing:
 - `market.limits`: `{ amount: { min, max }, price: { min, max }, cost: { min } }`
 - `market.precision`: `{ amount, price }`
 

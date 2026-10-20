@@ -73,9 +73,9 @@ MVP potential: clear user value, credible scope, a viral or repeat-use loop, tec
 Evidence of building: live orders on Somnia Tokyo testnet, transaction hashes, repo and demo
 Communication: quality and accuracy of your X posts
 Resources
-Perps on testnet for developers: network, contracts and SDK setup
-Perps on testnet for traders: orders, margin, funding
-dreamDEX bot kit: perps bot examples and strategies
-dreamBot Builder and the Link a Bot guide
-Somnia Markets SDK docs
+Perps on testnet for developers: network, contracts and SDK setup: https://app.testnet.dreamdex.io/docs/developers/perps-testnet
+Perps on testnet for traders: orders, margin, funding: https://app.testnet.dreamdex.io/docs/trading/perps-testnet
+dreamDEX bot kit: perps bot examples and strategies: https://github.com/somnia-chain/dreamdex-bot-kit
+dreamBot Builder and the Link a Bot guide: https://app.testnet.dreamdex.io/dreambot-builder & https://app.testnet.dreamdex.io/docs/trading/common/link-a-bot
+Somnia Markets SDK docs: https://somnia-platform-docs.vercel.app/markets/somnia-markets
 Questions: dreamDEX Discord, the SomniaHacks Telegram group or the Ask Question tab on this page

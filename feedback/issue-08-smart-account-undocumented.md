@@ -36,16 +36,20 @@ testSDK();
 `ContractRevertError: placeOrder reverted: ERC20InsufficientBalance(0xE50dD8e4aE1b1Dd46334eA22C10129Ee4d6736eF, 0, ...)`
 
 ## Expected
-1. The SDK documentation should clearly explain the relationship between the EOA signer and the Perps Arena Safe Smart Account.
+1. The SDK documentation should clearly explain the architectural relationship between the EOA signer, the Perps Arena Safe Smart Account, and the `OperatorPermissionsRegistry` (`0x6B2FbfeD328FF5F20C0BE7D3C3437613aFFE8D3a`) as outlined in [Link a Bot](https://app.testnet.dreamdex.io/docs/trading/common/link-a-bot).
 2. The SDK should either:
-   - Provide first-class support for configuring a Smart Account delegate (`smartAccountAddress` or `account` parameter in `SomniaMarkets` constructor), OR
-   - Document how bot developers can deposit margin directly to their EOA's `MarginBank` balance vs how to wrap transactions via `execTransaction` through the Smart Account.
+   - Provide first-class support for configuring a Smart Account delegate or operator (`owner` or `smartAccountAddress` parameter in `SomniaMarkets` constructor, similar to `dreamdex-bot-kit`'s `ChainContext.owner` using `placeOrderFor`), OR
+   - Document clearly in [Perps on Testnet for Developers](https://app.testnet.dreamdex.io/docs/developers/perps-testnet) that Perps Arena paper margin is locked inside the Safe Smart Account, and bots must independently claim EOA test funds via `markets.trader.claimPerpVoucher()` rather than expecting to trade on the UI balance.
 
 ## Actual
 - The SDK documentation only mentions supplying `privateKey` of the EOA.
 - The SDK derives `exchange.walletAddress` strictly from the EOA private key, querying only EOA balances and submitting transactions directly from the EOA.
 - Because the Perps Arena 1,000 USDso margin is locked inside `MarginBank` under the Smart Account address (`0x2d8B07bbfC92cF3A606b331D1c9385d46E7acAe8`), bots using the official SDK cannot access the funds displayed in their Perps Arena UI dashboard.
 - Any attempt to trade via the SDK results in immediate reversion due to 0 margin balance on the EOA.
+- Relevant documentation references:
+  - [Link a Bot Guide](https://app.testnet.dreamdex.io/docs/trading/common/link-a-bot)
+  - [Perps on Testnet for Developers](https://app.testnet.dreamdex.io/docs/developers/perps-testnet)
+  - [dreamDEX bot kit](https://github.com/somnia-chain/dreamdex-bot-kit)
 
 ## Evidence
 - **Perps Arena UI Account:** `0x2d8B07bbfC92cF3A606b331D1c9385d46E7acAe8` (Safe Smart Account Proxy)
