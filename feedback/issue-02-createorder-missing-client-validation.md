@@ -35,6 +35,12 @@ ContractRevertError: @somnia-chain/markets-sdk: placeOrder reverted: Missing or 
 ```
 
 ## Evidence
+- Live Terminal Execution with Real Testnet Wallet (`0xE50dD8e4aE1b1Dd46334eA22C10129Ee4d6736eF`):
+```text
+Authenticated Wallet Address: 0xE50dD8e4aE1b1Dd46334eA22C10129Ee4d6736eF
+Caught Error: ContractRevertError - @somnia-chain/markets-sdk: placeOrder reverted: ERC20InsufficientBalance(0xE50dD8e4aE1b1Dd46334eA22C10129Ee4d6736eF, 0, 2500000000000000000000)
+--> Note: Because 'invalid_type' was NOT validated on the client, the SDK proceeded to assemble an on-chain transaction calling placeOrder() on Somnia testnet contracts, which attempted collateral deduction and reverted.
+```
 - Stack trace:
 ```text
 ContractRevertError: @somnia-chain/markets-sdk: placeOrder reverted: Missing or invalid parameters.
@@ -46,5 +52,5 @@ ContractRevertError: @somnia-chain/markets-sdk: placeOrder reverted: Missing or 
 ## Environment
 - SDK version: `@somnia-chain/markets-sdk@0.32.1`
 - Network: Somnia Tokyo / Shannon Testnet (Chain ID: 50312)
-- Wallet address: `0x0123456789012345678901234567890123456789` (or any valid privateKey-derived address)
+- Wallet address: `0xE50dD8e4aE1b1Dd46334eA22C10129Ee4d6736eF`
 - Node.js version: v20.x

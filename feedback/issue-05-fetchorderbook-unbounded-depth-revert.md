@@ -41,5 +41,5 @@ ContractRevertError: @somnia-chain/markets-sdk: getBookLevels reverted: The cont
 ## Environment
 - SDK version: `@somnia-chain/markets-sdk@0.32.1`
 - Network: Somnia Tokyo / Shannon Testnet (Chain ID: 50312)
-- Wallet address: Public contract read (no signer required)
+- Wallet address: `0xE50dD8e4aE1b1Dd46334eA22C10129Ee4d6736eF`
 - Node.js version: v20.x

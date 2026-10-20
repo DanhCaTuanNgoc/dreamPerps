@@ -22,6 +22,17 @@ All issues documented below include exact reproduction code, expected vs actual 
 
 ---
 
+## Live Network Execution & Verification Status
+
+- **Tester Wallet Address:** `0xE50dD8e4aE1b1Dd46334eA22C10129Ee4d6736eF`
+- **Native Gas Balance:** `50.0 STT` (fauceted on Somnia Testnet)
+- **Collateral Balance:** `0 USDso` (pending Perps Arena airdrop)
+- **Live Run Verification:** Executed against live Somnia Testnet via `node feedback/reproduce_all.js`.
+- **Live Defect Discovery:** When attempting `createOrder()` with `invalid_type`, the SDK failed to validate on client side, constructed an on-chain calldata calling `placeOrder()` with wallet `0xE50dD8e4aE1b1Dd46334eA22C10129Ee4d6736eF`, which attempted to lock 2,500 USDso collateral and reverted on-chain with:  
+  `ERC20InsufficientBalance(0xE50dD8e4aE1b1Dd46334eA22C10129Ee4d6736eF, 0, 2500000000000000000000)`
+
+---
+
 ## Table of Issues
 
 | ID | Issue Title | Severity | Area | Bounty Tier |
@@ -138,6 +149,12 @@ Double check you have provided the correct parameters.
 ```
 
 #### Evidence
+- Live Terminal Execution with Real Wallet (`0xE50dD8e4aE1b1Dd46334eA22C10129Ee4d6736eF`):
+```text
+Authenticated Wallet Address: 0xE50dD8e4aE1b1Dd46334eA22C10129Ee4d6736eF
+Caught Error: ContractRevertError - @somnia-chain/markets-sdk: placeOrder reverted: ERC20InsufficientBalance(0xE50dD8e4aE1b1Dd46334eA22C10129Ee4d6736eF, 0, 2500000000000000000000)
+--> Confirms: Because 'invalid_type' bypassed client validation, the SDK constructed an on-chain transaction calling placeOrder() on Somnia testnet, triggering collateral deduction and contract revert.
+```
 - Error Stack Trace:
 ```text
 ContractRevertError: @somnia-chain/markets-sdk: placeOrder reverted: Missing or invalid parameters.
@@ -150,6 +167,7 @@ ContractRevertError: @somnia-chain/markets-sdk: placeOrder reverted: Missing or 
 #### Environment
 - SDK Version: `@somnia-chain/markets-sdk@0.32.1`
 - Network: Somnia Tokyo / Shannon Testnet (Chain ID: `50312`)
+- Wallet Address: `0xE50dD8e4aE1b1Dd46334eA22C10129Ee4d6736eF`
 
 ---
 

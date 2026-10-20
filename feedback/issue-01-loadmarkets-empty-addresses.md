@@ -45,5 +45,5 @@ const exchange = new SomniaMarkets({ chain: somniaShannon, addresses: SOMNIA_TES
 ## Environment
 - SDK version: `@somnia-chain/markets-sdk@0.32.1`
 - Network: Somnia Tokyo / Shannon Testnet (Chain ID: 50312)
-- Wallet address: Public discovery read (tested with and without wallet, e.g. `0x0123456789012345678901234567890123456789`)
+- Wallet address: `0xE50dD8e4aE1b1Dd46334eA22C10129Ee4d6736eF`
 - Node.js version: v20.x

@@ -31,7 +31,7 @@ export const config: AppConfig = {
     wsRpcUrl: process.env.WS_RPC_URL || "wss://api.infra.testnet.somnia.network/ws"
   },
   trader: {
-    privateKey: process.env.PRIVATE_KEY
+    privateKey: process.env.PRIVATE_KEY ? process.env.PRIVATE_KEY.trim() : undefined
   },
   trading: {
     tradingPair: process.env.TRADING_PAIR || "BTC/USDso:USDso",
