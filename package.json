@@ -1,0 +1,36 @@
+{
+  "name": "dreamdex-perps-agent",
+  "version": "1.0.0",
+  "description": "dreamDEX Perps Sentinel & Algorithmic Trading Agent on Somnia Tokyo Testnet",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "tsx src/index.ts",
+    "dev": "tsx watch src/index.ts",
+    "dry-run": "tsx src/index.ts --dry-run",
+    "test:connection": "tsx src/scripts/testConnection.ts"
+  },
+  "keywords": [
+    "somnia",
+    "dreamdex",
+    "perpetual",
+    "trading-bot",
+    "clob",
+    "defi"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@somnia-chain/markets-sdk": "^0.32.1",
+    "chalk": "^4.1.2",
+    "commander": "^12.1.0",
+    "dotenv": "^16.4.5",
+    "viem": "^2.21.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "rimraf": "^5.0.7",
+    "tsx": "^4.19.0",
+    "typescript": "^5.5.0"
+  }
+}
