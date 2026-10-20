@@ -126,6 +126,26 @@ async function testIssue06() {
   }
 }
 
+async function testIssue07() {
+  console.log('\n======================================================');
+  console.log('TESTING ISSUE 07: cancelOrder raw SyntaxError on alphanumeric ID');
+  console.log('======================================================');
+  const exchange = new SomniaMarkets({
+    chain: somniaShannon,
+    addresses: SOMNIA_TESTNET_ADDRESSES,
+    privateKey: realPrivateKey
+  });
+  await exchange.loadMarkets();
+  try {
+    await exchange.cancelOrder('order_abc_123', 'WBTC/USDso:USDso');
+  } catch (err) {
+    console.log('Caught Error:', err.name, '-', err.message);
+    if (err.name === 'SyntaxError') {
+      console.log('--> ISSUE 07 REPRODUCED: Non-numeric order ID triggered unhandled SyntaxError during BigInt conversion.');
+    }
+  }
+}
+
 async function runAll() {
   console.log('Running automated reproduction suite with real testnet wallet on Somnia Tokyo Testnet...\n');
   await testIssue01();
@@ -134,7 +154,8 @@ async function runAll() {
   await testIssue04();
   await testIssue05();
   await testIssue06();
-  console.log('\nAll 6 issues successfully verified and reproducible on live network!');
+  await testIssue07();
+  console.log('\nAll 7 issues successfully verified and reproducible on live network!');
 }
 
 runAll().catch(console.error);

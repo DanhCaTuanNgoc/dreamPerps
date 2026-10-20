@@ -13,7 +13,7 @@ async function reproduce() {
   const exchange = new SomniaMarkets({
     chain: somniaShannon,
     addresses: SOMNIA_TESTNET_ADDRESSES,
-    privateKey: "0x0123456789012345678901234567890123456789012345678901234567890123"
+    privateKey: process.env.PRIVATE_KEY || "0x0123456789012345678901234567890123456789012345678901234567890123"
   });
   await exchange.loadMarkets();
 
