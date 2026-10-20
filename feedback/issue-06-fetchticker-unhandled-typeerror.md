@@ -45,3 +45,5 @@ fetchTicker(undefined) threw: TypeError: Cannot read properties of undefined (re
 ## Environment
 - SDK version: `@somnia-chain/markets-sdk@0.32.1`
 - Network: Somnia Tokyo / Shannon Testnet (Chain ID: 50312)
+- Wallet address: Public ticker read (no signer required)
+- Node.js version: v20.x

@@ -42,3 +42,5 @@ NotConfiguredError: @somnia-chain/markets-sdk: this price-feed read — needs co
 ## Environment
 - SDK version: `@somnia-chain/markets-sdk@0.32.1`
 - Network: Somnia Tokyo / Shannon Testnet (Chain ID: 50312)
+- Wallet address: Public price stream read (no signer required)
+- Node.js version: v20.x

@@ -46,4 +46,5 @@ ContractRevertError: @somnia-chain/markets-sdk: placeOrder reverted: Missing or 
 ## Environment
 - SDK version: `@somnia-chain/markets-sdk@0.32.1`
 - Network: Somnia Tokyo / Shannon Testnet (Chain ID: 50312)
-- Node.js: v20.x
+- Wallet address: `0x0123456789012345678901234567890123456789` (or any valid privateKey-derived address)
+- Node.js version: v20.x

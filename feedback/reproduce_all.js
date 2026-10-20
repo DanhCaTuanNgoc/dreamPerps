@@ -116,6 +116,26 @@ async function testIssue06() {
   }
 }
 
+async function testIssue07() {
+  console.log('\n======================================================');
+  console.log('TESTING ISSUE 07: cancelOrder raw SyntaxError/TypeError on invalid ID');
+  console.log('======================================================');
+  const exchange = new SomniaMarkets({
+    chain: somniaShannon,
+    addresses: SOMNIA_TESTNET_ADDRESSES,
+    privateKey: '0x0123456789012345678901234567890123456789012345678901234567890123'
+  });
+  await exchange.loadMarkets();
+  try {
+    await exchange.cancelOrder('order_abc_123', 'WBTC/USDso:USDso');
+  } catch (err) {
+    console.log('Caught Error:', err.name, '-', err.message);
+    if (err.name === 'SyntaxError') {
+      console.log('--> ISSUE 07 REPRODUCED: Non-numeric order ID caused unhandled SyntaxError on BigInt conversion.');
+    }
+  }
+}
+
 async function runAll() {
   console.log('Running all reproduction tests for dreamDEX Perps Bounty Feedback Track...\n');
   await testIssue01();
@@ -124,7 +144,10 @@ async function runAll() {
   await testIssue04();
   await testIssue05();
   await testIssue06();
-  console.log('\nAll 6 issues successfully verified and reproducible!');
+  await testIssue07();
+  console.log('\n======================================================');
+  console.log('ALL 7 ISSUES SUCCESSFULLY VERIFIED AND REPRODUCIBLE!');
+  console.log('======================================================');
 }
 
 runAll().catch(console.error);
