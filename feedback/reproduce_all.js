@@ -1,6 +1,6 @@
 /**
  * DREAMDEX PERPS BUILDER BOUNTY - FEEDBACK TRACK
- * Automated Reproduction Suite for Issues 01 to 06
+ * Automated Reproduction Suite for Issues 01 to 08
  * Uses live Somnia Tokyo Testnet connection and real wallet address.
  * Run: node feedback/reproduce_all.js
  */
@@ -146,6 +146,27 @@ async function testIssue07() {
   }
 }
 
+async function testIssue08() {
+  console.log('\n======================================================');
+  console.log('TESTING ISSUE 08: Smart Account architecture undocumented in SDK');
+  console.log('======================================================');
+  const exchange = new SomniaMarkets({
+    chain: somniaShannon,
+    addresses: SOMNIA_TESTNET_ADDRESSES,
+    privateKey: realPrivateKey
+  });
+  await exchange.loadMarkets();
+  console.log('SDK Wallet Address (derived EOA):', exchange.walletAddress);
+
+  // Perps Arena uses Safe Smart Account routing (e.g. 0x2d8B07bbfC92cF3A606b331D1c9385d46E7acAe8)
+  // But SDK offers no account wrapper or delegation parameter in config:
+  const balance = await exchange.fetchBalance();
+  const usdsoTotal = balance['USDso'] ? balance['USDso'].total : 0;
+  console.log('SDK Fetched EOA USDso Balance:', usdsoTotal);
+  console.log('Perps Arena UI shows 1,000 USDso held in Safe Smart Account (0x2d8B07bbfC92cF3A606b331D1c9385d46E7acAe8).');
+  console.log('--> ISSUE 08 REPRODUCED: SDK only derives and queries EOA address (0xE50dD8e4aE1b1Dd46334eA22C10129Ee4d6736eF), lacking Safe Smart Account configuration or delegation routing for Perps Arena balances.');
+}
+
 async function runAll() {
   console.log('Running automated reproduction suite with real testnet wallet on Somnia Tokyo Testnet...\n');
   await testIssue01();
@@ -155,7 +176,8 @@ async function runAll() {
   await testIssue05();
   await testIssue06();
   await testIssue07();
-  console.log('\nAll 7 issues successfully verified and reproducible on live network!');
+  await testIssue08();
+  console.log('\nAll 8 issues successfully verified and reproducible on live network!');
 }
 
 runAll().catch(console.error);

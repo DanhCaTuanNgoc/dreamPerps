@@ -80,9 +80,41 @@ npm start
 
 ---
 
+## 🔗 Verified Testnet Orders & Smart Account Architecture
+
+During testing on **Somnia Tokyo Testnet (Chain ID: `50312`)**, live order execution and contract interactions were verified on-chain:
+
+| Entity | Address / Hash | Description |
+|:---|:---|:---|
+| **Perps Arena Smart Account** | [`0x2d8B07bbfC92cF3A606b331D1c9385d46E7acAe8`](https://explorer.testnet.somnia.network/tokyo/address/0x2d8B07bbfC92cF3A606b331D1c9385d46E7acAe8) | Safe Smart Account proxy holding 1,000 USDso margin |
+| **Owner / Signer EOA** | [`0xE50dD8e4aE1b1Dd46334eA22C10129Ee4d6736eF`](https://explorer.testnet.somnia.network/tokyo/address/0xE50dD8e4aE1b1Dd46334eA22C10129Ee4d6736eF) | MetaMask signer wallet |
+| **MarginBank Contract** | [`0x478769E1177C0773c43A593DCCc4Ad15F15F1394`](https://explorer.testnet.somnia.network/tokyo/address/0x478769E1177C0773c43A593DCCc4Ad15F15F1394) | Somnia Tokyo Perps MarginBank |
+| **Verified Order TxHash** | [`0x9f09e7f4c2211f9097b1689e6d8a1bc98d7d19020a09c77ea01344118542ccf3`](https://explorer.testnet.somnia.network/tokyo/tx/0x9f09e7f4c2211f9097b1689e6d8a1bc98d7d19020a09c77ea01344118542ccf3) | Live BTC Long order executed at Block `28555324` |
+
+---
+
 ## 📝 Bug & Feedback Submissions (Feedback Track)
 
-All reported issues, SDK discrepancies, and documentation gaps discovered during development and stress-testing are documented under the [`feedback/`](feedback/) directory following the official hackathon template.
+As part of the **Feedback Track**, our automated test harness identified **8 concrete, reproducible defects** across the SDK and integration layer.
+
+Detailed defect write-ups conforming to the hackathon guidelines are provided in [`feedback/`](feedback/) and summarized in [feedback-v1.md](feedback-v1.md):
+
+| ID | Issue Title | Severity | Area | Status |
+|:---|:---|:---:|:---:|:---:|
+| **[ISSUE-01](feedback/issue-01-loadmarkets-empty-addresses.md)** | `loadMarkets()` returns empty array on Testnet unless contract addresses are manually passed | **Critical** | SDK | 100% Reproducible |
+| **[ISSUE-02](feedback/issue-02-createorder-missing-client-validation.md)** | `createOrder()` bypasses client validation for `type` & `side`, wasting gas via contract revert | **Major** | SDK | 100% Reproducible |
+| **[ISSUE-03](feedback/issue-03-watchorderbook-notconfigured-error.md)** | `watchOrderBook()` throws unhandled `NotConfiguredError` without on-chain polling fallback | **Major** | SDK | 100% Reproducible |
+| **[ISSUE-04](feedback/issue-04-watchprice-pricefeed-notconfigured.md)** | `watchPrice()` throws `NotConfiguredError` requiring GraphQL price-feed without on-chain fallback | **Major** | SDK | 100% Reproducible |
+| **[ISSUE-05](feedback/issue-05-fetchorderbook-unbounded-depth-revert.md)** | `fetchOrderBook()` with large depth triggers on-chain `ContractRevertError` instead of client check | **Normal** | SDK | 100% Reproducible |
+| **[ISSUE-06](feedback/issue-06-fetchticker-unhandled-typeerror.md)** | `fetchTicker()` crashes with unhandled JavaScript `TypeError` on non-string inputs | **Normal** | SDK | 100% Reproducible |
+| **[ISSUE-07](feedback/issue-07-cancelorder-syntaxerror-invalid-id.md)** | `cancelOrder()` crashes with unhandled `SyntaxError: Cannot convert to BigInt` on alphanumeric IDs | **Normal** | SDK | 100% Reproducible |
+| **[ISSUE-08](feedback/issue-08-smart-account-undocumented.md)** | Undocumented Safe Smart Account architecture creates balance desync & order execution failure | **Major** | Docs / SDK | 100% Reproducible |
+
+### Run Automated Reproduction Suite
+To verify all 8 issues in a single execution against Somnia Tokyo Testnet:
+```bash
+node feedback/reproduce_all.js
+```
 
 ---
 
