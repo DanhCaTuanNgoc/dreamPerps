@@ -597,6 +597,7 @@ Phase 2 is specifically engineered to uncover **high-value defects ($40 Critical
 │ Vector 2: Smart Account Proxy │ Safe calldata, Replay, Delegate │ $40 (Critical/Major)  │
 │ Vector 3: CLOB Concurrency    │ Race conditions, Burst, Desync  │ $40 (Major)           │
 │ Vector 4: Common Edge Cases   │ Min lot, Tick size, Self-match  │ $15 - $40 (Norm/Maj)  │
+│ Vector 5: Docs & DX Snippets  │ Generic 500/400, Sandbox audits │ $15 (Normal/Docs)     │
 └───────────────────────────────┴─────────────────────────────────┴───────────────────────┘
 ```
 
@@ -642,6 +643,22 @@ Decentralized perpetual protocols rely on deterministic mathematical invariants.
   - Submit order sizes with alternating prime fractional sizes (e.g., `0.000333333333333333 WBTC`).
   - Close the position in fractional chunks (e.g., $1/3$, then $1/3$, then remainder).
 - **Vulnerability Flag:** Residual dust (< $0.0001) permanently frozen in the contract that cannot be withdrawn or utilized.
+
+#### Case 1.5: Leverage Boundary & Extreme Multiplier Fuzzing
+- **Concept:** When setting leverage or submitting orders with leverage multipliers, test extreme values (`0.99x`, `100.01x`, negative values like `-5x`, `0x`, `NaN`, `Infinity`).
+- **Execution:**
+  - Attempt to call `setLeverage(symbol, leverage)` or configure order leverage with these edge values.
+- **Vulnerability Flag:** 
+  - If SDK lacks client-side boundary checking and passes malformed values to RPC or EVM contracts, causing raw uninformative `ContractRevertError` or gas burn.
+  - If any leverage > 20x or < 1x is accepted by the engine/contracts, violating margin solvency parameters.
+
+#### Case 1.6: Funding Rate Epoch Boundary & Exact Deduction Settlement
+- **Concept:** Perpetual contracts charge funding payments periodically (e.g. hourly or 8-hour epoch). Funding paid by longs must strictly equal funding received by shorts.
+- **Execution:**
+  - Open long and short positions prior to an epoch rollover.
+  - Record account balance and funding rate accumulator before and after the hour tick.
+  - Verify timestamp alignment: Does settlement trigger on the exact second, or is there epoch drift?
+- **Vulnerability Flag:** Funding calculation discrepancy where deducted funding exceeds `Position Size * Funding Rate`, or timestamp drift causing skipped or double funding deductions.
 
 ---
 
@@ -699,6 +716,24 @@ The dreamDEX off-chain matching engine provides sub-10ms matching before on-chai
   - Submit Sell Market/Limit at $67,500 from the same account.
 - **Vulnerability Flag:** Protocol matches the order against itself and charges trading fees, or creates duplicate fills and corrupted position metrics.
 
+#### Case 3.4: 10-20 Order High-Burst Race & Orphan Order Detection
+- **Concept:** High-frequency bot bursts (firing 10 to 20 concurrent `createOrder` and `cancelOrder` requests in the same millisecond via `Promise.allSettled()`) test engine queue stability and EVM nonce sequencing.
+- **Execution:**
+  - Generate an array of 15 alternating limit orders and immediate cancellations.
+  - Dispatch all 15 promises simultaneously against the live network.
+- **Vulnerability Flag:**
+  - Internal matching engine crash (HTTP 500 or unresponsive gateway).
+  - Creation of "Orphan Orders" (orders appearing active in matching engine or WebSocket feed, but already canceled or reverted on-chain in `MarginBank`).
+  - Temporary negative available margin state due to out-of-order execution.
+
+#### Case 3.5: Large Market Order Impact & WS vs REST Desynchronization
+- **Concept:** Wiping multiple orderbook levels with a large aggressive order should update the WebSocket stream and REST snapshot synchronously.
+- **Execution:**
+  - Open WebSocket orderbook listener on `watchOrderBook`.
+  - Concurrently trigger a sizeable market fill.
+  - Continuously poll REST `fetchOrderBook` at 200ms intervals.
+- **Vulnerability Flag:** Stale data window (> 1.5 seconds) where REST returns pre-fill liquidity while WebSocket shows new prices, or dropped update sequence numbers.
+
 ---
 
 ### 4. Vector 4: Common & Quick-Win Edge Cases (Target: $15 - $40 Bounty)
@@ -717,21 +752,44 @@ These represent standard exchange boundary tests that frequently expose unhandle
 - **Test:** Submit an Immediate-or-Cancel (IOC) limit order with partial depth availability.
 - **Target:** Verify that the unfilled portion is immediately canceled and excess margin unlocked without requiring a manual `cancelOrder()` call.
 
-#### Case 4.4: WebSocket vs REST State Desynchronization
-- **Test:** Subscribe to `watchOrderBook` and poll `fetchOrderBook` continuously during live order placement.
-- **Target:** Check for sequence gaps, stale bids/asks, or snapshot rollback after reconnect.
+#### Case 4.4: Zero Balance / Overdrawn Margin Fuzzing
+- **Test:** Attempt order placement requiring margin strictly exceeding available balance by 1 satoshi (`balance + 0.000001`).
+- **Target:** Verify whether the SDK intercepts locally or submits on-chain, and whether the error response provides actionable margin requirements vs opaque reverts.
+
+---
+
+### 5. Vector 5: Developer Experience, Error Code Granularity & Docs Snippets (Target: $15 Normal/Docs)
+
+Documentation defects and uninformative error codes represent fast, high-probability bounty claims ($15 per hit) with straightforward verification.
+
+#### Case 5.1: Missing Descriptive Error Messages in API & Engine
+- **Concept:** When invalid arguments or out-of-bounds parameters hit the REST API or JSON-RPC gateway, the response must identify the violating field.
+- **Execution:**
+  - Send intentionally malformed payloads (e.g. missing `price`, negative `size`, non-existent `marketSymbol`).
+- **Vulnerability Flag:** API returns generic `{"error": "Internal Server Error"}` or HTTP 500 / 400 without specifying which parameter was malformed, forcing developers to guess.
+
+#### Case 5.2: 100% Documentation Code Snippet Automated Sandbox Audit
+- **Concept:** Every code example published in the official DreamDEX documentation, developer portal, and `dreamdex-bot-kit` repository must run out-of-the-box.
+- **Execution:**
+  - Extract all documented code blocks from the official gitbook/docs into standalone Node.js test scripts.
+  - Run each snippet in a sandbox environment.
+- **Vulnerability Flag:**
+  - Deprecated or nonexistent method calls (e.g., methods renamed across SDK versions).
+  - Missing mandatory configuration fields in snippet initialization (as seen with `SOMNIA_TESTNET_ADDRESSES` in Issue 01).
+  - TypeScript type mismatches between documented return types and actual runtime payloads.
 
 ---
 
 ### Phase 2 Implementation & Execution Roadmap
 
-| Step | Milestone | Script / Deliverable | Status |
-|:---:|:---|:---|:---:|
-| **Step 1** | Safe Smart Account Calldata & Nonce Suite | `feedback/phase2_smart_account.js` | Scheduled |
-| **Step 2** | Margin Math & Invariant Stress Suite | `feedback/phase2_margin_invariants.js` | Scheduled |
-| **Step 3** | CLOB Concurrency & Race Condition Suite | `feedback/phase2_concurrency_race.js` | Scheduled |
-| **Step 4** | Quick-Win Fuzzing Suite (Tick, Lot, TIF) | `feedback/phase2_quick_wins.js` | Scheduled |
-| **Step 5** | Bug Compilation & Issue Generation | Format into `feedback/issue-*.md` | Standby |
+| Step | Milestone | Script / Deliverable | Target Vector | Status |
+|:---:|:---|:---|:---|:---:|
+| **Step 1** | Safe Smart Account Calldata & Nonce Suite | `feedback/phase2_smart_account.js` | Vector 2 (Smart Account) | Scheduled |
+| **Step 2** | Margin Math & Invariant Stress Suite | `feedback/phase2_margin_invariants.js` | Vector 1 (Margin & Liquidation) | Scheduled |
+| **Step 3** | CLOB Concurrency & 10-20 Order Burst | `feedback/phase2_concurrency_race.js` | Vector 3 (Burst & Races) | Scheduled |
+| **Step 4** | Quick-Win Fuzzing Suite (Tick, Lot, TIF) | `feedback/phase2_quick_wins.js` | Vector 4 (Boundary Fuzzing) | Scheduled |
+| **Step 5** | Docs Snippets & Error Granularity Audit | `feedback/phase2_docs_audit.js` | Vector 5 (Docs & DX) | Scheduled |
+| **Step 6** | Bug Compilation & Issue Generation | Format into `feedback/issue-*.md` | All Vectors ($40/$15) | Standby |
 
 ---
 
