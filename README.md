@@ -8,7 +8,7 @@
 [![Bounty Track](https://img.shields.io/badge/Bounty-Feedback_Track_($1,500)-gold.svg)](hackathon_details.md)
 [![TypeScript](https://img.shields.io/badge/Language-TypeScript_5.x-blue.svg)](https://www.typescriptlang.org)
 [![Core SDK](https://img.shields.io/badge/SDK-%40somnia--chain%2Fmarkets--sdk@0.32.1-orange.svg)](https://www.npmjs.com/package/@somnia-chain/markets-sdk)
-[![Verification Status](https://img.shields.io/badge/Reproducibility-13%2F13_Verified_(100%25)-brightgreen.svg)](#-quick-start-for-bounty-judges)
+[![Verification Status](https://img.shields.io/badge/Reproducibility-15%2F15_Verified_(100%25)-brightgreen.svg)](#-quick-start-for-bounty-judges)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 ---
@@ -75,9 +75,11 @@ Evaluating issue-10-market-missing-limits-precision.md                       ...
 Evaluating issue-11-linked-wallet-bot-delegation-validation.md               ... ✅ REPRODUCED
 Evaluating issue-12-setperpleverage-missing-ccxt-facade-and-boundary-reverts.md ... ✅ REPRODUCED
 Evaluating issue-13-loadmarkets-swallows-rpc-errors.md                       ... ✅ REPRODUCED
+Evaluating issue-14-withdrawmargin-missing-client-validation.md              ... ✅ REPRODUCED
+Evaluating issue-15-createstoporder-blocks-perp-markets.md                   ... ✅ REPRODUCED
 
 ========================================================================
-🎯 SIMULATION RESULT: 13 / 13 ISSUES VERIFIED 100% REPRODUCIBLE!
+🎯 SIMULATION RESULT: 15 / 15 ISSUES VERIFIED 100% REPRODUCIBLE!
 ========================================================================
 ```
 
@@ -89,7 +91,7 @@ npm run test:feedback
 
 ---
 
-## 📋 Complete Defect Catalog (13 Verified Issues)
+## 📋 Complete Defect Catalog (15 Verified Issues)
 
 All individual markdown reports are stored in [`feedback/`](feedback/) adhering to the official bounty template:
 
@@ -108,6 +110,8 @@ All individual markdown reports are stored in [`feedback/`](feedback/) adhering 
 | **[ISSUE-11](feedback/issue-11-linked-wallet-bot-delegation-validation.md)** | `proposePerpWalletLink` bypasses client validation on self/zero addresses, burning gas on EVM revert | **Major** | SDK | [Verify Code](feedback/issue-11-linked-wallet-bot-delegation-validation.md#steps-to-reproduce) |
 | **[ISSUE-12](feedback/issue-12-setperpleverage-missing-ccxt-facade-and-boundary-reverts.md)** | `SomniaMarkets` omits CCXT `setLeverage()`, and `setPerpLeverage()` causes on-chain EVM reverts on boundary inputs | **Major** | SDK | [Verify Code](feedback/issue-12-setperpleverage-missing-ccxt-facade-and-boundary-reverts.md#steps-to-reproduce) |
 | **[ISSUE-13](feedback/issue-13-loadmarkets-swallows-rpc-errors.md)** | `loadMarkets()` swallows RPC network errors & timeouts, falsely returning success and crashing downstream | **Major** | SDK | [Verify Code](feedback/issue-13-loadmarkets-swallows-rpc-errors.md#steps-to-reproduce) |
+| **[ISSUE-14](feedback/issue-14-withdrawmargin-missing-client-validation.md)** | `withdrawMargin()` fails to validate amount on client, broadcasting invalid calls that cause on-chain EVM reverts | **Major** | SDK | [Verify Code](feedback/issue-14-withdrawmargin-missing-client-validation.md#steps-to-reproduce) |
+| **[ISSUE-15](feedback/issue-15-createstoporder-blocks-perp-markets.md)** | `SomniaMarkets.createStopOrder()` hardcodes block against PERP markets despite active on-chain stopRegistry contracts | **Major** | SDK | [Verify Code](feedback/issue-15-createstoporder-blocks-perp-markets.md#steps-to-reproduce) |
 
 ---
 

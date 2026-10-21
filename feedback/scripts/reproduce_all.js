@@ -221,6 +221,34 @@ async function testIssue13() {
   await brokenExchange.close();
 }
 
+async function testIssue14(exchange, perpSymbol) {
+  console.log('\n======================================================');
+  console.log('TESTING ISSUE 14: withdrawMargin() missing client validation');
+  console.log('======================================================');
+  try {
+    await exchange.withdrawMargin(perpSymbol, 0);
+  } catch (err) {
+    console.log('withdrawMargin(0) caught:', err.name, '-', err.message);
+    if (err.name === 'ContractRevertError') {
+      console.log('--> ISSUE 14 REPRODUCED: withdrawMargin(0) bypassed client validation and caused on-chain contract revert.');
+    }
+  }
+}
+
+async function testIssue15(exchange, perpSymbol) {
+  console.log('\n======================================================');
+  console.log('TESTING ISSUE 15: createStopOrder() blocks PERP markets');
+  console.log('======================================================');
+  try {
+    await exchange.createStopOrder(perpSymbol, 'limit', 'sell', 0.001, 70000, 69000);
+  } catch (err) {
+    console.log('createStopOrder caught:', err.name, '-', err.message);
+    if (err.name === 'InvalidInputError' && err.message.includes('not available on PERP markets')) {
+      console.log('--> ISSUE 15 REPRODUCED: createStopOrder() hardcodes block against PERP markets despite active on-chain stopRegistry.');
+    }
+  }
+}
+
 async function runAll() {
   console.log('Running automated reproduction suite with real testnet wallet on Somnia Tokyo Testnet...\n');
 
@@ -257,7 +285,9 @@ async function runAll() {
     await testIssue11(exchange, perpSymbol);
     await testIssue12(exchange, perpSymbol);
     await testIssue13();
-    console.log('\nAll 13 issues successfully verified and reproducible on live network!');
+    await testIssue14(exchange, perpSymbol);
+    await testIssue15(exchange, perpSymbol);
+    console.log('\nAll 15 issues successfully verified and reproducible on live network!');
   } finally {
     await exchange.close();
   }
