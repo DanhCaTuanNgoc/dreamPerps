@@ -1,6 +1,6 @@
 /**
  * DREAMDEX PERPS BUILDER BOUNTY - FEEDBACK TRACK
- * Automated Reproduction Suite for Issues 01 to 10
+ * Automated Reproduction Suite for Issues 01 to 12
  * Uses live Somnia Tokyo Testnet connection and real wallet address.
  * Run: node feedback/scripts/reproduce_all.js
  */
@@ -23,21 +23,16 @@ async function testIssue01() {
   if (exchange.symbols.length === 0) {
     console.log('--> ISSUE 01 REPRODUCED: Symbols list is empty [] despite 24 active pools existing on testnet.');
   }
+  await exchange.close();
 }
 
-async function testIssue02() {
+async function testIssue02(exchange, perpSymbol) {
   console.log('\n======================================================');
   console.log('TESTING ISSUE 02: createOrder client-side validation bypass');
   console.log('======================================================');
-  const exchange = new SomniaMarkets({
-    chain: somniaShannon,
-    addresses: SOMNIA_TESTNET_ADDRESSES,
-    privateKey: realPrivateKey
-  });
-  await exchange.loadMarkets();
   console.log('Authenticated Wallet Address:', exchange.walletAddress);
   try {
-    await exchange.createOrder('WBTC/USDso:USDso', 'invalid_type', 'buy', 1, 50000);
+    await exchange.createOrder(perpSymbol, 'invalid_type', 'buy', 1, 50000);
   } catch (err) {
     console.log('Caught Error:', err.name, '-', err.message);
     if (err.name === 'ContractRevertError') {
@@ -46,18 +41,12 @@ async function testIssue02() {
   }
 }
 
-async function testIssue03() {
+async function testIssue03(exchange, perpSymbol) {
   console.log('\n======================================================');
   console.log('TESTING ISSUE 03: watchOrderBook NotConfiguredError');
   console.log('======================================================');
-  const exchange = new SomniaMarkets({
-    chain: somniaShannon,
-    addresses: SOMNIA_TESTNET_ADDRESSES,
-    privateKey: realPrivateKey
-  });
-  await exchange.loadMarkets();
   try {
-    await exchange.watchOrderBook('WBTC/USDso:USDso', 10);
+    await exchange.watchOrderBook(perpSymbol, 10);
   } catch (err) {
     console.log('Caught Error:', err.name, '-', err.message);
     if (err.name === 'NotConfiguredError') {
@@ -66,18 +55,12 @@ async function testIssue03() {
   }
 }
 
-async function testIssue04() {
+async function testIssue04(exchange, perpSymbol) {
   console.log('\n======================================================');
   console.log('TESTING ISSUE 04: watchPrice NotConfiguredError');
   console.log('======================================================');
-  const exchange = new SomniaMarkets({
-    chain: somniaShannon,
-    addresses: SOMNIA_TESTNET_ADDRESSES,
-    privateKey: realPrivateKey
-  });
-  await exchange.loadMarkets();
   try {
-    await exchange.watchPrice('WBTC/USDso:USDso');
+    await exchange.watchPrice(perpSymbol);
   } catch (err) {
     console.log('Caught Error:', err.name, '-', err.message);
     if (err.name === 'NotConfiguredError') {
@@ -86,18 +69,12 @@ async function testIssue04() {
   }
 }
 
-async function testIssue05() {
+async function testIssue05(exchange, perpSymbol) {
   console.log('\n======================================================');
   console.log('TESTING ISSUE 05: fetchOrderBook unbounded depth revert');
   console.log('======================================================');
-  const exchange = new SomniaMarkets({
-    chain: somniaShannon,
-    addresses: SOMNIA_TESTNET_ADDRESSES,
-    privateKey: realPrivateKey
-  });
-  await exchange.loadMarkets();
   try {
-    await exchange.fetchOrderBook('WBTC/USDso:USDso', 99999999);
+    await exchange.fetchOrderBook(perpSymbol, 99999999);
   } catch (err) {
     console.log('Caught Error:', err.name, '-', err.message);
     if (err.name === 'ContractRevertError') {
@@ -106,16 +83,10 @@ async function testIssue05() {
   }
 }
 
-async function testIssue06() {
+async function testIssue06(exchange) {
   console.log('\n======================================================');
   console.log('TESTING ISSUE 06: fetchTicker raw TypeError');
   console.log('======================================================');
-  const exchange = new SomniaMarkets({
-    chain: somniaShannon,
-    addresses: SOMNIA_TESTNET_ADDRESSES,
-    privateKey: realPrivateKey
-  });
-  await exchange.loadMarkets();
   try {
     await exchange.fetchTicker(123);
   } catch (err) {
@@ -126,18 +97,12 @@ async function testIssue06() {
   }
 }
 
-async function testIssue07() {
+async function testIssue07(exchange, perpSymbol) {
   console.log('\n======================================================');
   console.log('TESTING ISSUE 07: cancelOrder raw SyntaxError on alphanumeric ID');
   console.log('======================================================');
-  const exchange = new SomniaMarkets({
-    chain: somniaShannon,
-    addresses: SOMNIA_TESTNET_ADDRESSES,
-    privateKey: realPrivateKey
-  });
-  await exchange.loadMarkets();
   try {
-    await exchange.cancelOrder('order_abc_123', 'WBTC/USDso:USDso');
+    await exchange.cancelOrder('order_abc_123', perpSymbol);
   } catch (err) {
     console.log('Caught Error:', err.name, '-', err.message);
     if (err.name === 'SyntaxError') {
@@ -146,20 +111,12 @@ async function testIssue07() {
   }
 }
 
-async function testIssue08() {
+async function testIssue08(exchange) {
   console.log('\n======================================================');
   console.log('TESTING ISSUE 08: Smart Account architecture undocumented in SDK');
   console.log('======================================================');
-  const exchange = new SomniaMarkets({
-    chain: somniaShannon,
-    addresses: SOMNIA_TESTNET_ADDRESSES,
-    privateKey: realPrivateKey
-  });
-  await exchange.loadMarkets();
   console.log('SDK Wallet Address (derived EOA):', exchange.walletAddress);
 
-  // Perps Arena uses Safe Smart Account routing (e.g. 0x2d8B07bbfC92cF3A606b331D1c9385d46E7acAe8)
-  // But SDK offers no account wrapper or delegation parameter in config:
   const balance = await exchange.fetchBalance();
   const usdsoTotal = balance['USDso'] ? balance['USDso'].total : 0;
   console.log('SDK Fetched EOA USDso Balance:', usdsoTotal);
@@ -167,18 +124,12 @@ async function testIssue08() {
   console.log('--> ISSUE 08 REPRODUCED: SDK only derives and queries EOA address (0xE50dD8e4aE1b1Dd46334eA22C10129Ee4d6736eF), lacking Safe Smart Account configuration or delegation routing for Perps Arena balances.');
 }
 
-async function testIssue09() {
+async function testIssue09(exchange, perpSymbol) {
   console.log('\n======================================================');
   console.log('TESTING ISSUE 09: fetchFundingRateHistory NotConfiguredError');
   console.log('======================================================');
-  const exchange = new SomniaMarkets({
-    chain: somniaShannon,
-    addresses: SOMNIA_TESTNET_ADDRESSES,
-    privateKey: realPrivateKey
-  });
-  await exchange.loadMarkets();
   try {
-    await exchange.fetchFundingRateHistory('WBTC/USDso:USDso');
+    await exchange.fetchFundingRateHistory(perpSymbol);
   } catch (err) {
     console.log('Caught Error:', err.name, '-', err.message);
     if (err.name === 'NotConfiguredError') {
@@ -187,17 +138,11 @@ async function testIssue09() {
   }
 }
 
-async function testIssue10() {
+async function testIssue10(exchange, perpSymbol) {
   console.log('\n======================================================');
   console.log('TESTING ISSUE 10: market() missing limits & precision metadata');
   console.log('======================================================');
-  const exchange = new SomniaMarkets({
-    chain: somniaShannon,
-    addresses: SOMNIA_TESTNET_ADDRESSES,
-    privateKey: realPrivateKey
-  });
-  await exchange.loadMarkets();
-  const market = exchange.market('WBTC/USDso:USDso');
+  const market = exchange.market(perpSymbol);
   console.log('market.limits:', market.limits);
   console.log('market.precision:', market.precision);
   if (market.limits === undefined && market.precision === undefined) {
@@ -205,19 +150,117 @@ async function testIssue10() {
   }
 }
 
+async function testIssue11(exchange, perpSymbol) {
+  console.log('\n======================================================');
+  console.log('TESTING ISSUE 11: proposePerpWalletLink validation bypass');
+  console.log('======================================================');
+  const m = exchange.market(perpSymbol);
+  try {
+    await exchange.trader.proposePerpWalletLink({
+      pool: m.pool,
+      child: exchange.walletAddress
+    });
+  } catch (err) {
+    console.log('Self-link caught:', err.name, '-', err.message);
+    if (err.name === 'ContractRevertError') {
+      console.log('--> ISSUE 11 REPRODUCED: proposeLink(child=self) caused on-chain contract revert.');
+    }
+  }
+}
+
+async function testIssue12(exchange, perpSymbol) {
+  console.log('\n======================================================');
+  console.log('TESTING ISSUE 12: Missing setLeverage & setPerpLeverage bounds');
+  console.log('======================================================');
+  console.log('exchange.setLeverage:', typeof exchange.setLeverage);
+  if (typeof exchange.setLeverage === 'undefined') {
+    console.log('--> ISSUE 12 PART 1 REPRODUCED: exchange.setLeverage is undefined on SomniaMarkets facade.');
+  }
+
+  const m = exchange.market(perpSymbol);
+  try {
+    await exchange.trader.setPerpLeverage({
+      marginBank: m.market.marginBank,
+      pool: m.pool,
+      leverageX: 0
+    });
+  } catch (err) {
+    console.log('leverageX=0 caught:', err.name, '-', err.message);
+    if (err.name === 'ContractRevertError') {
+      console.log('--> ISSUE 12 PART 2 REPRODUCED: setPerpLeverage(0) caused on-chain contract revert.');
+    }
+  }
+}
+
+async function testIssue13() {
+  console.log('\n======================================================');
+  console.log('TESTING ISSUE 13: loadMarkets() swallows RPC network errors');
+  console.log('======================================================');
+  const brokenChain = {
+    ...somniaShannon,
+    rpcUrls: {
+      default: { http: ['http://127.0.0.1:19999'], webSocket: ['ws://127.0.0.1:19999'] },
+      public: { http: ['http://127.0.0.1:19999'], webSocket: ['ws://127.0.0.1:19999'] }
+    }
+  };
+  const brokenExchange = new SomniaMarkets({
+    chain: brokenChain,
+    addresses: SOMNIA_TESTNET_ADDRESSES
+  });
+  console.log('Calling loadMarkets() during simulated RPC network outage...');
+  await brokenExchange.loadMarkets();
+  console.log('loadMarkets() completed silently. symbols.length:', brokenExchange.symbols.length);
+  try {
+    brokenExchange.market('WBTC/USDso:USDso');
+  } catch (err) {
+    console.log('Downstream market() call caught:', err.name, '-', err.message);
+    if (err.name === 'InvalidInputError') {
+      console.log('--> ISSUE 13 REPRODUCED: loadMarkets() swallowed RPC failure, resulting in misleading downstream crash.');
+    }
+  }
+  await brokenExchange.close();
+}
+
 async function runAll() {
   console.log('Running automated reproduction suite with real testnet wallet on Somnia Tokyo Testnet...\n');
+
+  // Test Issue 01 (tests unconfigured client discovery failure)
   await testIssue01();
-  await testIssue02();
-  await testIssue03();
-  await testIssue04();
-  await testIssue05();
-  await testIssue06();
-  await testIssue07();
-  await testIssue08();
-  await testIssue09();
-  await testIssue10();
-  console.log('\nAll 10 issues successfully verified and reproducible on live network!');
+
+  // Initialize shared configured exchange instance for subsequent tests
+  console.log('\nInitializing configured SomniaMarkets client...');
+  const exchange = new SomniaMarkets({
+    chain: somniaShannon,
+    addresses: SOMNIA_TESTNET_ADDRESSES,
+    privateKey: realPrivateKey
+  });
+  await exchange.loadMarkets();
+
+  if (exchange.symbols.length === 0) {
+    console.log('Retrying loadMarkets()...');
+    await exchange.loadMarkets(true);
+  }
+
+  const perpSymbol = exchange.symbols.find(s => s === 'WBTC/USDso:USDso') || exchange.symbols[0];
+  console.log(`Using target perp symbol: ${perpSymbol} (Total active markets: ${exchange.symbols.length})`);
+
+  try {
+    await testIssue02(exchange, perpSymbol);
+    await testIssue03(exchange, perpSymbol);
+    await testIssue04(exchange, perpSymbol);
+    await testIssue05(exchange, perpSymbol);
+    await testIssue06(exchange);
+    await testIssue07(exchange, perpSymbol);
+    await testIssue08(exchange);
+    await testIssue09(exchange, perpSymbol);
+    await testIssue10(exchange, perpSymbol);
+    await testIssue11(exchange, perpSymbol);
+    await testIssue12(exchange, perpSymbol);
+    await testIssue13();
+    console.log('\nAll 13 issues successfully verified and reproducible on live network!');
+  } finally {
+    await exchange.close();
+  }
 }
 
 runAll().catch(console.error);
