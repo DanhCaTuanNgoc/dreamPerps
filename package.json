@@ -8,7 +8,9 @@
     "start": "tsx src/index.ts",
     "dev": "tsx watch src/index.ts",
     "dry-run": "tsx src/index.ts --dry-run",
-    "test:connection": "tsx src/scripts/testConnection.ts"
+    "test:connection": "tsx src/scripts/testConnection.ts",
+    "test:feedback": "node feedback/scripts/reproduce_all.js",
+    "test:judge": "node feedback/scripts/test_judge_simulation.js"
   },
   "keywords": [
     "somnia",
