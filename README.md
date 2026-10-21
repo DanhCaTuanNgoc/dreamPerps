@@ -24,6 +24,10 @@ Rather than submitting superficial documentation feedback or speculative notes, 
 
 Every issue reported is backed by **100% deterministic reproduction code (< 20 lines)**, exact error callstacks, root-cause source code analysis, and **live on-chain transaction hashes** confirmed on the Somnia Shannon Testnet explorer.
 
+> [!TIP]
+> **For Lead Architects & Core Reviewers:**  
+> In addition to the individual issue files below, we have compiled the [**Master Defect & Architectural Synthesis Report (AUDIT_SYNTHESIS_REPORT.md)**](feedback/AUDIT_SYNTHESIS_REPORT.md). It groups all 15 findings into 4 foundational root-cause categories (Client Guardrail Vacuum, CCXT Divergence, Off-Chain Stream Outages, and Protocol Boundaries) and outlines actionable architectural recommendations for the dreamDEX and Somnia engineering teams.
+
 ---
 
 ## ⚖️ Bounty Evaluation Alignment
@@ -41,7 +45,7 @@ According to the official [hackathon_details.md](hackathon_details.md), submissi
 
 ## ⚡ Quick Start for Bounty Judges
 
-Judges can verify all 13 issues on a clean machine without any prior setup or `.env` configuration.
+Judges can verify all 15 issues on a clean machine without any prior setup or `.env` configuration.
 
 ### 1. Clone & Install
 ```bash
